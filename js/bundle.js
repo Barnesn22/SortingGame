@@ -762,6 +762,7 @@ class GoodsMatchGame {
 
     this.comboCount = 0;
     this.lastMatchTime = 0;
+    this.isRepairingBoard = false;
 
     // DOM Elements
     this.dom = {
@@ -860,6 +861,8 @@ class GoodsMatchGame {
   }
 
   bindEvents() {
+    window.addEventListener('resize', () => this.updateBoardScale());
+
     // Start Screen Play Button
     this.dom.btnPlayStart.addEventListener('click', () => {
       audio.ensureContext();
@@ -1037,6 +1040,15 @@ class GoodsMatchGame {
     this.dom.btnShuffle.disabled = this.boosters.shuffle <= 0;
   }
 
+  updateBoardScale() {
+    const headerHeight = document.querySelector('.game-header')?.offsetHeight || 62;
+    const footerHeight = document.querySelector('.game-footer')?.offsetHeight || 90;
+    const shelfCount = Math.max(this.shelves.length || 1, 1);
+    const availableHeight = Math.max(300, window.innerHeight - headerHeight - footerHeight - 36);
+    const targetSize = Math.max(42, Math.min(74, Math.floor((availableHeight / shelfCount) - 46)));
+    document.documentElement.style.setProperty('--item-size', `${targetSize}px`);
+  }
+
   // Build a randomized, solvable multi-layer goods board
   generateShelves(config) {
     // If the level has a handcrafted authentic layout, use it!
@@ -1153,6 +1165,7 @@ class GoodsMatchGame {
   // DOM Rendering
   // =========================================================================
   renderShelves() {
+    this.updateBoardScale();
     this.dom.shelvesContainer.innerHTML = '';
 
     this.shelves.forEach((shelf, shelfIdx) => {
@@ -1581,6 +1594,34 @@ class GoodsMatchGame {
     }
   }
 
+  getRemainingFrontItems() {
+    const remaining = [];
+    this.shelves.forEach(shelf => {
+      shelf.forEach(slot => {
+        if (slot.length > 0) remaining.push(slot[0].id);
+      });
+    });
+    return remaining;
+  }
+
+  hasImpossibleFinalState() {
+    const remaining = this.getRemainingFrontItems();
+    if (remaining.length !== 3) return false;
+    const uniqueIds = new Set(remaining);
+    return uniqueIds.size > 1;
+  }
+
+  repairImpossibleBoardState() {
+    if (this.isRepairingBoard) return;
+    this.isRepairingBoard = true;
+    this.showToast('Board repaired — reshuffling!');
+    this.boosters.shuffle = Math.max(1, this.boosters.shuffle);
+    this.handleShuffle();
+    setTimeout(() => {
+      this.isRepairingBoard = false;
+    }, 200);
+  }
+
   clearTripleMatch(shelfIdx, itemId) {
     const goodMeta = getGoodById(itemId);
 
@@ -1655,6 +1696,11 @@ class GoodsMatchGame {
         totalRemaining += slot.length;
       });
     });
+
+    if (this.hasImpossibleFinalState()) {
+      this.repairImpossibleBoardState();
+      return;
+    }
 
     if (totalRemaining === 0) {
       this.handleLevelWin();
