@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1e1e2f">
+  <meta name="description" content="Goods Match Sort 3D - Satisfying supermarket goods shelf sorting game. Match 3 items to clear shelves!">
+  <title>Goods Match - 3D Shelf Sort Game</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-app">
+    <!-- Top Game Bar matching Mobile Inspiration -->
+    <header class="game-header">
+      <div class="header-left">
+        <!-- Progress Counter Pill (e.g. 6/111) -->
+        <div class="items-progress-pill">
+          <div class="progress-bar-fill" id="progress-bar-fill"></div>
+          <span id="progress-display">0/6</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Level & Timer Combined Pill -->
+        <div class="header-center-stack">
+          <span class="level-pill-tag">LV <span id="level-display">1</span></span>
+          <div class="timer-badge" id="timer-badge">
+            <span id="timer-display">02:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Star Score Pill -->
+        <div class="stars-counter-pill">
+          <span class="star-gold">⭐</span>
+          <span id="score-display">0</span>
+        </div>
+
+        <!-- Pause / Settings Button -->
+        <button id="btn-menu" class="btn-pause" aria-label="Pause Menu" title="Menu">
+          <svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+
+        <button id="btn-sound" class="btn-sound-mini" aria-label="Toggle Sound" title="Sound On/Off">
+          <svg id="sound-icon-on" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+          </svg>
+          <svg id="sound-icon-off" class="hidden" viewBox="0 0 24 24">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Board Area with Warm Wood Closet Background -->
+    <main class="game-viewport">
+      <div id="supermarket-background" class="store-backdrop"></div>
+
+      <!-- Wooden Cabinet Cupboard Outer Frame -->
+      <div class="cabinet-frame">
+        <div class="cabinet-top-cornice">
+          <div class="cabinet-stage-ribbon">
+            <span class="ribbon-arrow left">◀</span>
+            <span class="ribbon-text" id="ribbon-level-title">Aisle 1</span>
+            <span class="ribbon-arrow right">▶</span>
+          </div>
+        </div>
+
+        <div id="shelves-container" class="shelves-grid">
+          <!-- Dynamic 3-slot shelves with warm wood grain & background drop shadow -->
+        </div>
+      </div>
+
+      <!-- Particle effects canvas -->
+      <canvas id="particles-canvas"></canvas>
+    </main>
+
+    <!-- Floating drag clone element -->
+    <div id="drag-ghost" class="drag-ghost hidden"></div>
+
+    <!-- Bottom Action Bar / Boosters with Circular Bubble Design & Combo Badge -->
+    <footer class="game-footer">
+      <div class="boosters">
+        <!-- Hammer Booster -->
+        <button id="btn-undo" class="circle-booster-btn" title="Undo last move">
+          <div class="booster-bubble hammer-bubble">
+            <span class="booster-emoji">🔨</span>
+            <span id="undo-count" class="bubble-count">3</span>
+          </div>
+        </button>
+
+        <!-- Propeller / Shuffle Booster -->
+        <button id="btn-shuffle" class="circle-booster-btn" title="Shuffle shelves">
+          <div class="booster-bubble fan-bubble">
+            <span class="booster-emoji">🪭</span>
+            <span id="shuffle-count" class="bubble-count">2</span>
+          </div>
+        </button>
+
+        <!-- Alarm Clock / Freeze/Hint Booster -->
+        <button id="btn-hint" class="circle-booster-btn" title="Hint matching item">
+          <div class="booster-bubble clock-bubble">
+            <span class="booster-emoji">⏰</span>
+            <span id="hint-count" class="bubble-count">3</span>
+          </div>
+        </button>
+
+        <button id="btn-restart" class="circle-booster-btn" title="Reset Level">
+          <div class="booster-bubble reset-bubble">
+            <span class="booster-emoji">↺</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Combo Indicator Pill matching bottom-right of image -->
+      <div class="combo-circle-badge" id="combo-circle-badge">
+        <span class="combo-title" id="combo-title-text">x1</span>
+        <span class="combo-sub">COMBO</span>
+      </div>
+    </footer>
+
+    <!-- Overlay: Start / Title Screen Modal -->
+    <div id="modal-start" class="modal-overlay">
+      <div class="modal-card start-card animate-pop">
+        <div class="store-badge-hero">
+          <span class="hero-icon">🛒</span>
+          <h1 class="game-logo">GOODS SORT</h1>
+          <span class="sub-logo">CORNER MARKET</span>
+        </div>
+
+        <div class="start-level-info">
+          <span class="current-label">TODAY'S AISLE</span>
+          <div class="level-big-badge">
+            <span class="lvl-word">STAGE</span>
+            <span id="start-level-num" class="lvl-num">1</span>
+          </div>
+          <span id="start-level-title" class="lvl-title">First Shift: The Basics</span>
+        </div>
+
+        <div class="rules-tip">
+          <span>💡 <strong>Quick Tip:</strong> Line up 3 matching products on any shelf to clear them out. You can only move items into empty spots!</span>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-play-start" class="btn-primary pulse btn-play-large">CLOCK IN ▶</button>
+          <button id="btn-start-select-level" class="btn-secondary">Aisle Directory</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay: Level Complete Modal -->
+    <div id="modal-win" class="modal-overlay hidden">
+      <div class="modal-card win-card animate-pop">
+        <div class="confetti-holder"></div>
+        <h2 class="modal-title">AISLE RESTOCKED! ✨</h2>
+        <div class="stars-row">
+          <span class="star-slot" id="win-star-1">★</span>
+          <span class="star-slot" id="win-star-2">★</span>
+          <span class="star-slot" id="win-star-3">★</span>
+        </div>
+        <div class="score-summary">
+          <div class="summary-line"><span>Shift Earnings:</span><strong id="win-score-val">0</strong></div>
+          <div class="summary-line"><span>Speed Bonus:</span><strong id="win-time-val">0s</strong></div>
+          <div class="summary-line highlight"><span>Total Cash:</span><strong id="win-total-val">0</strong></div>
+        </div>
+        <div class="modal-actions">
+          <button id="btn-next-level" class="btn-primary pulse">NEXT AISLE ➔</button>
+          <button id="btn-win-replay" class="btn-secondary">Replay Shift</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay: Game Over / Time Out Modal -->
+    <div id="modal-gameover" class="modal-overlay hidden">
+      <div class="modal-card lose-card animate-pop">
+        <div class="icon-bubble">🏪</div>
+        <h2 class="modal-title">STORE'S CLOSING!</h2>
+        <p class="modal-desc">Ran out of time before everything was tidy on the shelves.</p>
+        <div class="modal-actions">
+          <button id="btn-retry" class="btn-primary">TRY SHIFT AGAIN ↺</button>
+          <button id="btn-lose-menu" class="btn-secondary">Aisle Directory</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay: Deadlock / No Moves Left Modal -->
+    <div id="modal-deadlock" class="modal-overlay hidden">
+      <div class="modal-card lose-card animate-pop">
+        <div class="icon-bubble">📦</div>
+        <h2 class="modal-title">OUT OF OPEN SLOTS!</h2>
+        <p class="modal-desc">Every empty spot is filled and no matches are ready. Use an Undo or Shuffle to break free!</p>
+        <div class="modal-actions">
+          <button id="btn-deadlock-undo" class="btn-primary">UNDO LAST MOVE ↺</button>
+          <button id="btn-deadlock-shuffle" class="btn-secondary">SHUFFLE SHELVES 🔀</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay: Level Selection Modal -->
+    <div id="modal-levels" class="modal-overlay hidden">
+      <div class="modal-card levels-card animate-pop">
+        <div class="modal-header-row">
+          <h2 class="modal-title">AISLE DIRECTORY</h2>
+          <button id="btn-close-levels" class="btn-close">✕</button>
+        </div>
+        <div id="levels-grid" class="levels-picker-grid">
+          <!-- Populated in JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Banner Toast Notification (e.g. combos, hints) -->
+    <div id="toast-banner" class="toast-banner hidden"></div>
+  </div>
+
+  <!-- Standalone script: works with both direct file:// double-click AND http:// servers -->
+  <script src="js/bundle.js"></script>
+</body>
+</html>

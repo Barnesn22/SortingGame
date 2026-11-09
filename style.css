@@ -1,0 +1,1122 @@
+/* ==========================================================================
+   Goods Match 3D — Warm Cozy Shelf Sort Styling
+   Inspired by: Goods Sort mobile game
+   Palette: warm peach walls, wood-brown shelves, vibrant 3D items
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap');
+
+:root {
+  /* Warm room palette */
+  --bg-wall:     #E8C99A;
+  --bg-wall-2:   #D4A96A;
+  --bg-floor:    #C08040;
+  --cabinet-bg:  #8B5E3C;
+  --cabinet-dark:#6B4423;
+  --shelf-plank: #A0622A;
+  --shelf-top:   #C07838;
+  --shelf-shadow:#6B3A18;
+
+  /* Item slot */
+  --slot-open-bg:    rgba(255,220,120,0.18);
+  --slot-open-border:rgba(255,200,80,0.5);
+  --slot-valid-bg:   rgba(80,220,100,0.28);
+  --slot-valid-bdr:  rgba(60,200,80,0.8);
+  --slot-invalid-bg: rgba(255,80,80,0.22);
+  --slot-invalid-bdr:rgba(255,60,60,0.7);
+
+  /* UI colours */
+  --accent-gold:   #FFCC00;
+  --accent-orange: #FF8C00;
+  --accent-green:  #44DD88;
+  --accent-blue:   #35A8E0;
+  --accent-purple: #7B52E8;
+  --accent-teal:   #2DCFCC;
+  --accent-pink:   #FF5FA0;
+
+  --text-dark:  #2D1800;
+  --text-mid:   #6B4A28;
+  --text-light: #FFFFFF;
+  --font:       'Fredoka', 'Nunito', system-ui, sans-serif;
+
+  --shadow-soft: 0 6px 18px rgba(0,0,0,0.22);
+  --shadow-hard: 0 10px 30px rgba(0,0,0,0.42);
+  --item-size:   74px;
+}
+
+/* ==========================================================================
+   Reset & Base
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--text-dark);
+  touch-action: manipulation;
+  /* Warm room-interior background */
+  background:
+    linear-gradient(180deg,
+      #E8C99A 0%,
+      #D4A96A 70%,
+      #C08040 100%
+    );
+}
+
+#game-app {
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle wall texture stripes */
+#game-app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 60px,
+      rgba(255,255,255,0.03) 60px,
+      rgba(255,255,255,0.03) 61px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ==========================================================================
+   Header Bar — teal pill left, purple pill center, gold pill right
+   ========================================================================== */
+.game-header {
+  position: relative;
+  z-index: 30;
+  height: 62px;
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: rgba(100,55,20,0.72);
+  backdrop-filter: blur(14px);
+  border-bottom: 2px solid rgba(80,40,10,0.4);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28);
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* -- Progress pill (top-left, teal/cyan like reference) -- */
+.items-progress-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  height: 34px;
+  background: linear-gradient(135deg, #18D8D0 0%, #0FB8C8 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0,180,180,0.4), 0 1px 0 rgba(255,255,255,0.3) inset;
+  padding: 0 14px;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: rgba(255,255,255,0.22);
+  border-radius: 20px;
+  width: 0%;
+  transition: width 0.4s ease;
+  pointer-events: none;
+}
+
+#progress-display {
+  position: relative;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* -- Center: level pill + timer pill stacked -- */
+.header-center {
+  display: flex;
+  align-items: center;
+}
+
+.header-center-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.level-pill-tag {
+  background: linear-gradient(135deg, #9966FF 0%, #7744EE 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 14px;
+  border-radius: 20px 20px 0 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(100,60,220,0.5);
+}
+
+.timer-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7744EE 0%, #5522CC 100%);
+  border-radius: 0 0 16px 16px;
+  padding: 3px 18px 5px;
+  box-shadow: 0 4px 12px rgba(80,40,200,0.45);
+  min-width: 100px;
+}
+
+#timer-display {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.timer-badge.warning {
+  animation: timerPulse 0.75s infinite alternate;
+  background: linear-gradient(135deg, #FF4455, #CC2233);
+}
+
+@keyframes timerPulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); box-shadow: 0 4px 18px rgba(255,60,80,0.7); }
+}
+
+/* -- Stars pill (top-right, gold) -- */
+.stars-counter-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+  border-radius: 20px;
+  padding: 5px 12px;
+  box-shadow: 0 3px 10px rgba(220,160,0,0.45), 0 1px 0 rgba(255,255,255,0.4) inset;
+}
+
+.star-gold { font-size: 16px; }
+
+#score-display {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(100,50,0,0.4);
+}
+
+/* -- Pause button (purple, square-ish with rounded corners) -- */
+.btn-pause {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7744EE, #5522CC);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 10px rgba(80,40,200,0.5);
+  transition: transform 0.15s ease;
+}
+
+.btn-pause svg {
+  width: 18px; height: 18px;
+  fill: #fff;
+  pointer-events: none;
+}
+
+.btn-pause:active { transform: scale(0.9); }
+
+/* -- Sound button (small, plain) -- */
+.btn-sound-mini {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.btn-sound-mini svg { width: 18px; height: 18px; fill: #fff; pointer-events: none; }
+.btn-sound-mini:active { transform: scale(0.9); }
+
+/* ==========================================================================
+   Game Viewport — the warm room interior
+   ========================================================================== */
+.game-viewport {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 8px 10px 8px;
+  z-index: 1;
+  /* NO perspective here — caused ghost offset bug */
+}
+
+/* Wood floor strip at bottom */
+.game-viewport::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 28px;
+  background: linear-gradient(180deg, #A05C20 0%, #7A4010 100%);
+  box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ==========================================================================
+   Cabinet Frame — the tall wooden bookshelf unit
+   ========================================================================== */
+.cabinet-frame {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: linear-gradient(180deg, #7A4820 0%, #6B3A18 100%);
+  border-radius: 10px 10px 4px 4px;
+  box-shadow:
+    6px 0 0 0 #4A2808,
+    -6px 0 0 0 #4A2808,
+    0 8px 0 0 #3A1800,
+    0 0 0 6px #5A3010,
+    var(--shadow-hard);
+  padding: 0 10px 12px 10px;
+  margin: 0 auto;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+/* Cabinet cornice top with the level ribbon */
+.cabinet-top-cornice {
+  background: linear-gradient(180deg, #A06030 0%, #8B4E22 50%, #7A3E18 100%);
+  margin: 0 -10px;
+  border-radius: 10px 10px 0 0;
+  padding: 6px 10px 5px;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.3),
+    0 2px 0 rgba(255,255,255,0.08) inset;
+  margin-bottom: 8px;
+}
+
+.cabinet-stage-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ribbon-arrow {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+}
+
+#ribbon-level-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,235,180,0.9);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Shelves Grid — single-column inside cabinet
+   ========================================================================== */
+.shelves-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Shelf Unit — each shelf row (plank + slots)
+   ========================================================================== */
+.shelf-unit {
+  position: relative;
+  width: 100%;
+  /* vertical space for items + depth peeking */
+  padding: 8px 4px 0 4px;
+  margin-bottom: 2px;
+}
+
+/* Wooden plank divider at bottom of each shelf */
+.shelf-plank {
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 16px;
+  background: linear-gradient(180deg,
+    #D4894A 0%,
+    #B56830 40%,
+    #8B4A18 100%
+  );
+  box-shadow:
+    0 5px 12px rgba(0,0,0,0.5),
+    0 2px 0 rgba(255,255,255,0.15) inset;
+  border-radius: 2px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Wood grain lines */
+.shelf-plank::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 20px,
+      rgba(0,0,0,0.06) 20px, rgba(0,0,0,0.06) 21px
+    );
+  border-radius: inherit;
+}
+
+/* Top highlight edge of plank */
+.shelf-plank::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 2px 2px 0 0;
+}
+
+/* Slots row */
+.shelf-slots {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  min-height: 110px;
+  position: relative;
+  z-index: 2;
+  padding-bottom: 14px;
+}
+
+/* ==========================================================================
+   Individual Slot
+   ========================================================================== */
+.shelf-slot {
+  width: var(--item-size);
+  height: 128px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+/* Open / empty slot */
+.shelf-slot.is-open {
+  background: var(--slot-open-bg);
+  border: 1.5px dashed var(--slot-open-border);
+}
+
+.shelf-slot.is-open:hover {
+  background: rgba(255,230,100,0.25);
+  border-color: rgba(255,210,60,0.75);
+}
+
+/* Drag-hover indicators */
+.shelf-slot.drop-valid {
+  background: var(--slot-valid-bg) !important;
+  border: 2px solid var(--slot-valid-bdr) !important;
+  box-shadow: 0 0 14px rgba(60,200,80,0.45);
+  transform: translateY(-3px);
+}
+
+.shelf-slot.drop-invalid {
+  background: var(--slot-invalid-bg) !important;
+  border: 2px solid var(--slot-invalid-bdr) !important;
+}
+
+/* Cleared shelf dimming */
+.shelf-unit.shelf-cleared { opacity: 0.6; filter: saturate(0.5); }
+
+/* ==========================================================================
+   Goods Items — 3D depth layering
+   ========================================================================== */
+.goods-item {
+  width: var(--item-size);
+  height: var(--item-size);
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  cursor: grab;
+  transition:
+    transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.22s ease,
+    opacity 0.22s ease;
+  user-select: none;
+  touch-action: none;
+  will-change: transform;
+}
+
+.goods-item svg {
+  width: 90%;
+  height: 90%;
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,0.35));
+  pointer-events: none;
+  display: block;
+}
+
+/* Layer 0 — front, fully interactive */
+.goods-item.layer-0 {
+  z-index: 10;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Layer 1 — peek above */
+.goods-item.layer-1 {
+  z-index: 6;
+  opacity: 0.9;
+  transform: translateY(-28px) scale(0.9);
+  filter: brightness(0.82);
+  pointer-events: none;
+}
+
+/* Layer 2 — peek further */
+.goods-item.layer-2 {
+  z-index: 3;
+  opacity: 0.82;
+  transform: translateY(-52px) scale(0.8);
+  filter: brightness(0.68);
+  pointer-events: none;
+}
+
+/* Layer deep (3+) */
+.goods-item.layer-deep {
+  z-index: 1;
+  opacity: 0.72;
+  transform: translateY(-72px) scale(0.7);
+  filter: brightness(0.55);
+  pointer-events: none;
+}
+
+/* Selected item — tap mode */
+.goods-item.selected {
+  outline: 3px solid var(--accent-gold);
+  outline-offset: 2px;
+  transform: translateY(-18px) scale(1.14) !important;
+  box-shadow: 0 14px 28px rgba(255,180,0,0.5) !important;
+  z-index: 30 !important;
+  animation: floatBob 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes floatBob {
+  from { transform: translateY(-16px) scale(1.13); }
+  to   { transform: translateY(-22px) scale(1.15); }
+}
+
+/* Hint glow */
+.goods-item.hint-highlight {
+  animation: hintGlow 0.85s ease-in-out infinite alternate !important;
+  z-index: 25 !important;
+}
+
+@keyframes hintGlow {
+  from { box-shadow: 0 0 10px var(--accent-teal); transform: scale(1); }
+  to   { box-shadow: 0 0 26px var(--accent-gold), 0 0 40px var(--accent-orange); transform: scale(1.1); }
+}
+
+/* Shelf shake on match */
+.shelf-unit.shelf-shake {
+  animation: shelfWobble 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shelfWobble {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-5px) rotate(-0.5deg); }
+  40%,80% { transform: translateX(5px)  rotate(0.5deg); }
+}
+
+/* Match clear pop animation */
+.goods-item.match-clear {
+  animation: matchPop 0.44s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: 50 !important;
+}
+
+@keyframes matchPop {
+  0%   { transform: scale(1) rotate(0); opacity: 1; }
+  35%  { transform: scale(1.25) rotate(5deg); opacity: 0.95; filter: brightness(1.4); }
+  70%  { transform: scale(0.55) rotate(-8deg); opacity: 0.75; }
+  100% { transform: scale(0) rotate(15deg); opacity: 0; }
+}
+
+/* Floating combo pill */
+.floating-combo {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%) scale(0.6);
+  background: linear-gradient(135deg, #FFCC00, #FF8C00);
+  color: #2D1800;
+  font-family: var(--font);
+  font-weight: 900;
+  font-size: 20px;
+  padding: 8px 24px;
+  border-radius: 28px;
+  box-shadow: 0 10px 28px rgba(255,140,0,0.65), 0 0 20px rgba(255,255,255,0.7);
+  pointer-events: none;
+  z-index: 9999;
+  letter-spacing: 1px;
+  animation: comboPopFloat 1.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes comboPopFloat {
+  0%   { transform: translate(-50%, -20%) scale(0.5); opacity: 0; }
+  25%  { transform: translate(-50%, -65%) scale(1.15); opacity: 1; }
+  75%  { transform: translate(-50%, -95%) scale(1.05); opacity: 1; }
+  100% { transform: translate(-50%, -130%) scale(0.85); opacity: 0; }
+}
+
+/* ==========================================================================
+   Drag Ghost
+   ========================================================================== */
+#drag-ghost {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--item-size);
+  height: var(--item-size);
+  pointer-events: none;
+  z-index: 99999;
+  filter: drop-shadow(0 18px 28px rgba(0,0,0,0.6));
+  will-change: transform;
+}
+
+/* ==========================================================================
+   Footer — Circular Booster Buttons
+   ========================================================================== */
+.game-footer {
+  position: relative;
+  z-index: 30;
+  height: 90px;
+  min-height: 90px;
+  background: rgba(80,45,15,0.78);
+  backdrop-filter: blur(14px);
+  border-top: 2px solid rgba(60,30,5,0.5);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.28);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.boosters {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Each circular booster */
+.circle-booster-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.booster-bubble {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 5px 15px rgba(0,0,0,0.4),
+    0 2px 0 rgba(255,255,255,0.3) inset;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.circle-booster-btn:active .booster-bubble {
+  transform: scale(0.9);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.circle-booster-btn:disabled .booster-bubble {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.booster-emoji {
+  font-size: 26px;
+  line-height: 1;
+  display: block;
+}
+
+/* Colour tints per booster type */
+.hammer-bubble { background: linear-gradient(145deg, #FF9966, #FF5533); }
+.fan-bubble    { background: linear-gradient(145deg, #66BBFF, #3388DD); }
+.clock-bubble  { background: linear-gradient(145deg, #FFDD44, #FFAA00); }
+.reset-bubble  { background: linear-gradient(145deg, #AAEEBB, #44BB77); }
+
+/* Count badge top-right of each bubble */
+.bubble-count {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: #FF3344;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid rgba(80,45,15,0.8);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+}
+
+/* Combo badge — orange pill, bottom right of footer */
+.combo-circle-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FF8C00, #FF5500);
+  border-radius: 20px;
+  padding: 6px 14px;
+  min-width: 68px;
+  box-shadow: 0 4px 14px rgba(255,100,0,0.5), 0 1px 0 rgba(255,255,255,0.25) inset;
+  transition: transform 0.2s ease;
+}
+
+.combo-circle-badge.combo-pop {
+  animation: comboBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes comboBadgePop {
+  0%  { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100%{ transform: scale(1); }
+}
+
+#combo-title-text {
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.combo-sub {
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 1.5px;
+}
+
+/* ==========================================================================
+   Modals & Overlays
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(60,30,5,0.72);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  background: linear-gradient(180deg, #FFF3E0 0%, #FFE4B8 100%);
+  border: 3px solid rgba(180,120,40,0.4);
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.6) inset;
+  color: var(--text-dark);
+}
+
+.modal-title {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+  color: var(--text-dark);
+}
+
+.win-card .modal-title  { color: #B07800; }
+.lose-card .modal-title { color: #CC2233; }
+
+/* Stars row */
+.stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 44px;
+  color: rgba(0,0,0,0.12);
+  margin-bottom: 16px;
+}
+
+.stars-row .star-slot.earned {
+  color: var(--accent-gold);
+  text-shadow: 0 2px 10px rgba(255,180,0,0.7);
+  animation: starBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes starBounce {
+  0%   { transform: scale(0.2) rotate(-40deg); }
+  60%  { transform: scale(1.3) rotate(10deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* Score summary */
+.score-summary {
+  background: rgba(0,0,0,0.08);
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  color: var(--text-mid);
+}
+
+.summary-line.highlight {
+  border-top: 1px solid rgba(0,0,0,0.12);
+  padding-top: 6px;
+  font-size: 17px;
+  color: var(--text-dark);
+}
+
+.summary-line strong { color: var(--text-dark); }
+
+/* Modal actions */
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #FFCC00 0%, #FF8C00 100%);
+  color: #2D1800;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 7px 18px rgba(255,140,0,0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover { box-shadow: 0 10px 24px rgba(255,140,0,0.6); }
+.btn-primary:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255,140,0,0.3); }
+
+.btn-secondary {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 16px;
+  border: 2px solid rgba(140,80,20,0.3);
+  background: rgba(140,80,20,0.1);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-secondary:hover { background: rgba(140,80,20,0.18); }
+
+.pulse { animation: buttonPulse 1.6s infinite; }
+
+@keyframes buttonPulse {
+  0%   { box-shadow: 0 7px 18px rgba(255,140,0,0.4); }
+  50%  { box-shadow: 0 10px 28px rgba(255,140,0,0.75); transform: scale(1.02); }
+  100% { box-shadow: 0 7px 18px rgba(255,140,0,0.4); }
+}
+
+.icon-bubble { font-size: 54px; margin-bottom: 10px; }
+.modal-desc  { font-size: 14px; color: var(--text-mid); margin-bottom: 20px; line-height: 1.4; }
+
+/* ==========================================================================
+   Start Screen Card
+   ========================================================================== */
+.start-card {
+  background: linear-gradient(180deg, #FFF8EE 0%, #FFE8C0 100%);
+  border: 3px solid rgba(180,120,40,0.45);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.55), 0 2px 0 rgba(255,255,255,0.7) inset;
+  max-width: 380px;
+}
+
+.store-badge-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.hero-icon {
+  font-size: 60px;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+  margin-bottom: 4px;
+}
+
+.game-logo {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #8B4E00;
+  text-shadow: 0 3px 10px rgba(140,80,0,0.3);
+}
+
+.sub-logo {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--accent-orange);
+  margin-top: 2px;
+}
+
+.start-level-info {
+  background: rgba(140,80,20,0.1);
+  border: 1px solid rgba(140,80,20,0.2);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.start-level-info .current-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-mid);
+  letter-spacing: 2px;
+}
+
+.level-big-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.level-big-badge .lvl-word {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent-orange);
+}
+
+.level-big-badge .lvl-num {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--text-dark);
+  line-height: 1;
+}
+
+.start-level-info .lvl-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-blue);
+}
+
+.rules-tip {
+  font-size: 13px;
+  color: var(--text-mid);
+  background: rgba(255,180,40,0.12);
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--accent-orange);
+  text-align: left;
+  line-height: 1.4;
+}
+
+.rules-tip strong { color: var(--accent-orange); }
+
+.btn-play-large {
+  font-size: 20px;
+  padding: 16px 24px;
+}
+
+/* ==========================================================================
+   Level Selection Modal
+   ========================================================================== */
+.modal-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.btn-close {
+  background: rgba(140,80,20,0.15);
+  border: none;
+  color: var(--text-mid);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font);
+}
+
+.levels-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.level-tile {
+  background: rgba(140,80,20,0.1);
+  border: 2px solid rgba(140,80,20,0.2);
+  border-radius: 14px;
+  padding: 12px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  color: var(--text-dark);
+}
+
+.level-tile:hover:not(.locked) {
+  background: rgba(255,180,40,0.2);
+  border-color: var(--accent-orange);
+  transform: translateY(-2px);
+}
+
+.level-tile.current {
+  border-color: var(--accent-orange);
+  background: rgba(255,180,40,0.2);
+}
+
+.level-tile.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.level-tile .tile-num  { font-size: 18px; font-weight: 800; }
+.level-tile .tile-stars { font-size: 10px; color: var(--accent-gold); }
+
+/* ==========================================================================
+   Toast Banner
+   ========================================================================== */
+.toast-banner {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #7744EE, #35A8E0);
+  color: #fff;
+  padding: 8px 22px;
+  border-radius: 24px;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  z-index: 999;
+  pointer-events: none;
+  animation: toastFade 2.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  white-space: nowrap;
+}
+
+@keyframes toastFade {
+  0%   { transform: translate(-50%, -15px) scale(0.85); opacity: 0; }
+  15%  { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  80%  { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -20px) scale(0.9); opacity: 0; }
+}
+
+/* ==========================================================================
+   Particles Canvas
+   ========================================================================== */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ==========================================================================
+   Animate-pop entry for modals
+   ========================================================================== */
+.animate-pop {
+  animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ==========================================================================
+   Responsive tweaks — small phones
+   ========================================================================== */
+@media (max-width: 400px) {
+  :root { --item-size: 64px; }
+  .shelf-slots { min-height: 95px; }
+  .shelf-slot  { height: 112px; }
+  .booster-bubble { width: 50px; height: 50px; }
+  .boosters { gap: 10px; }
+  .game-footer { padding: 0 12px; }
+}
+
+@media (max-height: 680px) {
+  .game-header { height: 52px; min-height: 52px; }
+  .game-footer { height: 76px; min-height: 76px; }
+  :root { --item-size: 62px; }
+  .shelf-slot  { height: 105px; }
+  .shelf-slots { min-height: 90px; }
+}
+
+/* ==========================================================================
+   Utility
+   ========================================================================== */
+.hidden { display: none !important; }
