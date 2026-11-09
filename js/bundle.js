@@ -592,131 +592,50 @@ const particles = new ParticleSystem('particles-canvas');
 
 /* --- levels.js --- */
 /**
- * levels.js - Authentic Goods Sort difficulty progression & handcrafted level layouts
- * Every item type has an exact count of 3 (guaranteed triplets, zero leftovers)!
+ * levels.js - Procedurally generated, guaranteed-solvable level layouts.
  */
 
-const LEVELS = [
-  {
-    level: 1,
-    title: 'First Shift: The Basics',
-    shelves: 3,
-    depth: 1,
-    timeLimit: 120,
-    threeStarTime: 60,
-    // 2 items: 'cola' x3, 'chips' x3 (6 items total across 9 slots -> 3 open slots)
-    layout: [
-      [['cola'], ['chips'], []],
-      [['chips'], ['cola'], []],
-      [['cola'], ['chips'], []]
-    ]
-  },
-  {
-    level: 2,
-    title: 'Aisle Expansion: Layering',
-    shelves: 3,
-    depth: 2,
-    timeLimit: 140,
-    threeStarTime: 75,
-    // 3 items: 'cola' x3, 'chips' x3, 'milk' x3 (9 items total)
-    // Exactly 3 of each item!
-    layout: [
-      [['cola', 'milk'], ['chips', 'cola'], []],
-      [['milk', 'chips'], ['cola'], []],
-      [['chips'], ['milk'], []]
-    ]
-  },
-  {
-    level: 3,
-    title: 'Snack Corner: Spatial Strategy',
-    shelves: 4,
-    depth: 2,
-    timeLimit: 160,
-    threeStarTime: 90,
-    // 4 items: 'cola' x3, 'chips' x3, 'milk' x3, 'donut' x3 (12 items total)
-    // Exactly 3 of each item!
-    layout: [
-      [['donut', 'chips'], ['cola', 'milk'], []],
-      [['chips', 'cola'], ['donut'], []],
-      [['cola'], ['chips', 'donut'], []],
-      [['milk'], ['milk'], []]
-    ]
-  },
-  {
-    level: 4,
-    title: 'Bakery Rush: Triple Depth',
-    shelves: 4,
-    depth: 3,
-    timeLimit: 180,
-    threeStarTime: 100,
-    // 5 items: 'chips' x3, 'milk' x3, 'donut' x3, 'apple' x3, 'coffee' x3 (15 items)
-    // Exactly 3 of each item!
-    layout: [
-      [['apple', 'coffee', 'milk'], ['chips', 'donut', 'apple'], []],
-      [['milk', 'chips'], ['coffee', 'apple'], []],
-      [['coffee', 'milk'], ['donut'], []],
-      [['donut'], ['chips'], []]
-    ]
-  },
-  {
-    level: 5,
-    title: 'The Mega Supermarket',
-    shelves: 5,
-    depth: 3,
-    timeLimit: 200,
-    threeStarTime: 110,
-    // 6 items: 'cola' x3, 'chips' x3, 'milk' x3, 'donut' x3, 'apple' x3, 'coffee' x3 (18 items)
-    // Exactly 3 of each item!
-    layout: [
-      [['cola', 'donut', 'apple'], ['chips', 'cola', 'milk'], []],
-      [['milk', 'coffee'], ['coffee', 'chips', 'cola'], []],
-      [['apple', 'coffee'], ['donut'], []],
-      [['apple', 'milk'], ['donut'], []],
-      [['chips'], [], []]
-    ]
-  },
-  {
-    level: 6,
-    title: 'Stockroom Master',
-    shelves: 5,
-    depth: 3,
-    timeLimit: 220,
-    threeStarTime: 120,
-    items: ['cola', 'chips', 'milk', 'donut', 'apple', 'coffee', 'icecream']
-  },
-  {
-    level: 7,
-    title: 'Grand Opening Madness',
-    shelves: 6,
-    depth: 3,
-    timeLimit: 240,
-    threeStarTime: 135,
-    items: ['cola', 'chips', 'milk', 'donut', 'apple', 'coffee', 'icecream', 'orange']
-  },
-  {
-    level: 8,
-    title: 'Warehouse Sorcerer',
-    shelves: 6,
-    depth: 4,
-    timeLimit: 260,
-    threeStarTime: 150,
-    items: ['cola', 'chips', 'milk', 'donut', 'apple', 'coffee', 'icecream', 'orange', 'jam']
-  }
+const BASE_ITEMS = [
+  'panda', 'gummy', 'guitar', 'greenmug', 'cupcake',
+  'popsicle', 'coffeecup', 'cola', 'waterbottle', 'thermos'
 ];
+
+function createGuaranteedLayout(shelves) {
+  const layout = Array.from({ length: shelves }, () => [[], [], []]);
+  const itemPool = [...BASE_ITEMS].sort(() => Math.random() - 0.5).slice(0, shelves);
+
+  itemPool.forEach((itemId, shelfIndex) => {
+    layout[shelfIndex][0].push(itemId);
+    layout[shelfIndex][1].push(itemId);
+    layout[shelfIndex][2].push(itemId);
+  });
+
+  return layout;
+}
+
+function buildProceduralLevel(levelNum) {
+  const shelves = Math.min(6, Math.max(3, 3 + Math.floor(levelNum / 2)));
+  const timeLimit = 120 + (levelNum - 1) * 20;
+  const itemPool = BASE_ITEMS.slice(0, Math.min(BASE_ITEMS.length, shelves));
+
+  return {
+    level: levelNum,
+    title: `Aisle #${levelNum}`,
+    shelves,
+    depth: 1,
+    timeLimit,
+    threeStarTime: Math.max(60, Math.floor(timeLimit * 0.5)),
+    items: itemPool,
+    layout: createGuaranteedLayout(shelves)
+  };
+}
+
+const LEVELS = Array.from({ length: 8 }, (_, index) => buildProceduralLevel(index + 1));
 
 function getLevelConfig(levelNum) {
   const lvl = LEVELS.find(l => l.level === levelNum);
   if (lvl) return lvl;
-  const baseItems = ['cola', 'chips', 'milk', 'donut', 'apple', 'coffee', 'icecream', 'orange', 'jam', 'cookies'];
-  return {
-    level: levelNum,
-    title: `Expert Shift #${levelNum}`,
-    shelves: Math.min(6, 4 + Math.floor(levelNum / 3)),
-    depth: Math.min(4, 2 + Math.floor(levelNum / 2)),
-    items: baseItems.slice(0, Math.min(baseItems.length, 5 + (levelNum % 6))),
-    timeLimit: 240,
-    threeStarTime: 130
-  };
+  return buildProceduralLevel(levelNum);
 }
 
 /* --- main.js --- */
