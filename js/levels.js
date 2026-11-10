@@ -2,9 +2,9 @@
  * levels.js - Procedurally generated, guaranteed-solvable level layouts.
  *
  * Generation flow:
- * 1) pick a set of item types
- * 2) create one triplet per item type
- * 3) split each triplet across multiple shelf slots so the board remains playable
+ * 1) pick the item types for the level
+ * 2) create one triplet for each chosen item
+ * 3) split those triplets across empty/filled slots while keeping room to solve
  */
 
 const BASE_ITEMS = [
@@ -13,28 +13,32 @@ const BASE_ITEMS = [
 ];
 
 function shuffle(list) {
-  const copy = [...list];
-  for (let i = copy.length - 1; i > 0; i--) {
+  const next = [...list];
+  for (let i = next.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    [next[i], next[j]] = [next[j], next[i]];
   }
-  return copy;
+  return next;
 }
 
 function pickItemsForLevel(levelNum, shelves) {
-  const targetCount = Math.min(
-    BASE_ITEMS.length,
-    Math.max(2, Math.floor((shelves * 2) / 3))
-  );
+  const totalSlots = shelves * 3;
+  const reservedOpenSlots = Math.max(1, Math.floor(shelves / 2));
+  const usableSlots = totalSlots - reservedOpenSlots;
+  const maxDistinctItems = Math.min(BASE_ITEMS.length, Math.max(2, Math.floor(usableSlots / 3)));
 
-  return shuffle(BASE_ITEMS).slice(0, targetCount);
+  return shuffle(BASE_ITEMS).slice(0, maxDistinctItems);
 }
 
 function createTriplets(items) {
-  return items.flatMap(itemId => [itemId, itemId, itemId]);
+  const triplets = new Map();
+  items.forEach(itemId => {
+    triplets.set(itemId, [itemId, itemId, itemId]);
+  });
+  return triplets;
 }
 
-function splitTripletsAcrossShelves(triplets, shelves) {
+function placeTripletsAcrossShelves(shelves, triplets) {
   const layout = Array.from({ length: shelves }, () => [[], [], []]);
   const allSlots = [];
 
@@ -44,56 +48,36 @@ function splitTripletsAcrossShelves(triplets, shelves) {
     }
   }
 
-  const reservedEmptySlots = new Set();
-  for (let shelf = 0; shelf < shelves; shelf++) {
-    reservedEmptySlots.add(`${shelf}:${(shelf + 2) % 3}`);
-  }
+  const reservedOpenSlots = shuffle(allSlots).slice(0, Math.max(1, Math.floor(shelves / 2)));
+  const reservedSet = new Set(reservedOpenSlots.map(({ shelf, slot }) => `${shelf}:${slot}`));
+  const usableSlots = allSlots.filter(({ shelf, slot }) => !reservedSet.has(`${shelf}:${slot}`));
 
-  const usableSlots = allSlots.filter(({ shelf, slot }) => {
-    return !reservedEmptySlots.has(`${shelf}:${slot}`);
-  });
+  const itemsToPlace = shuffle([...triplets.keys()]);
+  const usedSlots = new Set();
 
-  const itemsById = new Map();
-  for (const itemId of triplets) {
-    if (!itemsById.has(itemId)) itemsById.set(itemId, 0);
-    itemsById.set(itemId, itemsById.get(itemId) + 1);
-  }
+  itemsToPlace.forEach(itemId => {
+    const chosenSlots = shuffle(usableSlots.filter(({ shelf, slot }) => {
+      const key = `${shelf}:${slot}`;
+      return !usedSlots.has(key);
+    })).slice(0, 3);
 
-  const order = shuffle(Object.keys(itemsById));
-  const assignments = new Map();
+    if (chosenSlots.length < 3) {
+      throw new Error(`Could not place triplet for ${itemId}`);
+    }
 
-  order.forEach((itemId) => {
-    const slots = shuffle(usableSlots).slice(0, 3);
-    assignments.set(itemId, slots);
-  });
-
-  order.forEach((itemId) => {
-    const slots = assignments.get(itemId) || [];
-    slots.forEach(({ shelf, slot }) => {
+    chosenSlots.forEach(({ shelf, slot }) => {
+      const key = `${shelf}:${slot}`;
+      usedSlots.add(key);
       layout[shelf][slot].push(itemId);
     });
   });
-
-  for (let shelf = 0; shelf < shelves; shelf++) {
-    for (let slot = 0; slot < 3; slot++) {
-      if (layout[shelf][slot].length > 3) {
-        const target = allSlots.find(({ shelf: targetShelf, slot: targetSlot }) => {
-          return targetShelf !== shelf && layout[targetShelf][targetSlot].length < 3;
-        });
-
-        if (target) {
-          layout[target.shelf][target.slot].push(layout[shelf][slot].pop());
-        }
-      }
-    }
-  }
 
   return layout;
 }
 
 function createGuaranteedLayout(shelves, items) {
   const triplets = createTriplets(items);
-  return splitTripletsAcrossShelves(triplets, shelves);
+  return placeTripletsAcrossShelves(shelves, triplets);
 }
 
 function buildProceduralLevel(levelNum) {
