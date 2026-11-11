@@ -321,10 +321,17 @@ class GoodsMatchGame {
   updateBoardScale() {
     const headerHeight = document.querySelector('.game-header')?.offsetHeight || 62;
     const footerHeight = document.querySelector('.game-footer')?.offsetHeight || 90;
+    const cabinet = document.querySelector('.cabinet-frame');
+    const cabinetWidth = cabinet ? cabinet.clientWidth : 360;
+    const columns = Math.min(3, Math.max(1, this.shelves.length || 1));
     const shelfCount = Math.max(this.shelves.length || 1, 1);
-    const availableHeight = Math.max(300, window.innerHeight - headerHeight - footerHeight - 36);
-    const targetSize = Math.max(42, Math.min(74, Math.floor((availableHeight / shelfCount) - 46)));
-    document.documentElement.style.setProperty('--item-size', `${targetSize}px`);
+    const availableHeight = Math.max(240, window.innerHeight - headerHeight - footerHeight - 28);
+    const heightBasedSize = Math.max(28, Math.min(42, Math.floor((availableHeight / shelfCount) - 38)));
+    const widthBasedSize = Math.max(28, Math.min(42, Math.floor((cabinetWidth / columns) - 26)));
+    const targetSize = Math.min(heightBasedSize, widthBasedSize);
+
+    this.dom.shelvesContainer.style.setProperty('--shelf-columns', String(columns));
+    document.documentElement.style.setProperty('--item-size', `${Math.max(28, targetSize)}px`);
   }
 
   // Build a randomized, solvable multi-layer goods board

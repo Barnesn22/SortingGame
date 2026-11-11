@@ -16,7 +16,7 @@
   --shelf-plank: #A0622A;
   --shelf-top:   #C07838;
   --shelf-shadow:#6B3A18;
-  --item-size:   62px;
+  --item-size:   clamp(30px, 5.2vw, 48px);
 
   /* Item slot */
   --slot-open-bg:    rgba(255,220,120,0.18);
@@ -295,7 +295,7 @@ html, body {
 .cabinet-frame {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: min(92vw, 420px);
   background: linear-gradient(180deg, #7A4820 0%, #6B3A18 100%);
   border-radius: 10px 10px 4px 4px;
   box-shadow:
@@ -347,11 +347,13 @@ html, body {
    Shelves Grid — single-column inside cabinet
    ========================================================================== */
 .shelves-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  --shelf-columns: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--shelf-columns), minmax(0, 1fr));
+  gap: 8px 10px;
   width: 100%;
   max-height: 100%;
+  align-items: start;
 }
 
 /* ==========================================================================
@@ -360,9 +362,9 @@ html, body {
 .shelf-unit {
   position: relative;
   width: 100%;
-  /* vertical space for items + depth peeking */
-  padding: 6px 4px 0 4px;
-  margin-bottom: 2px;
+  /* balanced compact stacking for tall boards */
+  padding: 5px 4px 0 4px;
+  margin-bottom: 1px;
 }
 
 /* Wooden plank divider at bottom of each shelf */
@@ -411,10 +413,10 @@ html, body {
   display: flex;
   justify-content: space-around;
   align-items: flex-end;
-  min-height: calc(var(--item-size) + 22px);
+  min-height: calc(var(--item-size) + 20px);
   position: relative;
   z-index: 2;
-  padding-bottom: 14px;
+  padding-bottom: 12px;
 }
 
 /* ==========================================================================
@@ -422,7 +424,7 @@ html, body {
    ========================================================================== */
 .shelf-slot {
   width: var(--item-size);
-  height: calc(var(--item-size) + 44px);
+  height: calc(var(--item-size) + 28px);
   position: relative;
   display: flex;
   align-items: flex-end;
@@ -481,8 +483,8 @@ html, body {
 }
 
 .goods-item svg {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   filter: drop-shadow(0 5px 8px rgba(0,0,0,0.35));
   pointer-events: none;
   display: block;
@@ -1099,21 +1101,42 @@ html, body {
 /* ==========================================================================
    Responsive tweaks — small phones
    ========================================================================== */
-@media (max-width: 400px) {
-  :root { --item-size: 64px; }
-  .shelf-slots { min-height: 95px; }
-  .shelf-slot  { height: 112px; }
+@media (max-width: 420px) {
+  .cabinet-frame {
+    max-width: min(94vw, 330px);
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .shelves-grid {
+    gap: 4px 8px;
+  }
+
+  .shelf-unit {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  .shelf-slot {
+    width: calc((100% - 18px) / 3);
+    height: calc(var(--item-size) + 22px);
+  }
+
+  .shelf-slots {
+    min-height: calc(var(--item-size) + 18px);
+  }
+
   .booster-bubble { width: 50px; height: 50px; }
   .boosters { gap: 10px; }
   .game-footer { padding: 0 12px; }
 }
 
-@media (max-height: 680px) {
+@media (max-height: 700px) {
   .game-header { height: 52px; min-height: 52px; }
   .game-footer { height: 76px; min-height: 76px; }
-  :root { --item-size: 62px; }
-  .shelf-slot  { height: 105px; }
-  .shelf-slots { min-height: 90px; }
+  .cabinet-frame { max-width: min(92vw, 320px); }
+  .shelf-slot  { height: calc(var(--item-size) + 18px); }
+  .shelf-slots { min-height: calc(var(--item-size) + 12px); }
 }
 
 /* ==========================================================================

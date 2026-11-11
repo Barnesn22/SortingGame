@@ -600,10 +600,7 @@ const particles = new ParticleSystem('particles-canvas');
  * 3) split those triplets across empty/filled slots while keeping room to solve
  */
 
-const BASE_ITEMS = [
-  'panda', 'gummy', 'guitar', 'greenmug', 'cupcake',
-  'popsicle', 'coffeecup', 'cola', 'waterbottle', 'thermos'
-];
+const BASE_ITEMS = GOODS_TYPES.map(({ id }) => id);
 
 function shuffle(list) {
   const next = [...list];
@@ -615,11 +612,7 @@ function shuffle(list) {
 }
 
 function pickItemsForLevel(levelNum, shelves) {
-  const totalSlots = shelves * 3;
-  const reservedOpenSlots = Math.max(1, Math.floor(shelves / 2));
-  const usableSlots = totalSlots - reservedOpenSlots;
-  const maxDistinctItems = Math.min(BASE_ITEMS.length, Math.max(2, Math.floor(usableSlots / 3)));
-
+  const maxDistinctItems = Math.min(BASE_ITEMS.length, Math.max(2, shelves));
   return shuffle(BASE_ITEMS).slice(0, maxDistinctItems);
 }
 
@@ -633,36 +626,25 @@ function createTriplets(items) {
 
 function placeTripletsAcrossShelves(shelves, triplets) {
   const layout = Array.from({ length: shelves }, () => [[], [], []]);
-  const allSlots = [];
-
-  for (let shelf = 0; shelf < shelves; shelf++) {
-    for (let slot = 0; slot < 3; slot++) {
-      allSlots.push({ shelf, slot });
-    }
-  }
-
-  const reservedOpenSlots = shuffle(allSlots).slice(0, Math.max(1, Math.floor(shelves / 2)));
-  const reservedSet = new Set(reservedOpenSlots.map(({ shelf, slot }) => `${shelf}:${slot}`));
-  const usableSlots = allSlots.filter(({ shelf, slot }) => !reservedSet.has(`${shelf}:${slot}`));
-
   const itemsToPlace = shuffle([...triplets.keys()]);
-  const usedSlots = new Set();
+  const usedShelves = new Set();
 
   itemsToPlace.forEach(itemId => {
-    const chosenSlots = shuffle(usableSlots.filter(({ shelf, slot }) => {
-      const key = `${shelf}:${slot}`;
-      return !usedSlots.has(key);
-    })).slice(0, 3);
+    const availableShelves = Array.from({ length: shelves }, (_, shelf) => shelf)
+      .filter(shelf => !usedShelves.has(shelf));
 
-    if (chosenSlots.length < 3) {
+    if (availableShelves.length === 0) {
       throw new Error(`Could not place triplet for ${itemId}`);
     }
 
-    chosenSlots.forEach(({ shelf, slot }) => {
-      const key = `${shelf}:${slot}`;
-      usedSlots.add(key);
+    const shelf = availableShelves[Math.floor(Math.random() * availableShelves.length)];
+    const slots = shuffle([0, 1, 2]);
+
+    slots.forEach(slot => {
       layout[shelf][slot].push(itemId);
     });
+
+    usedShelves.add(shelf);
   });
 
   return layout;
